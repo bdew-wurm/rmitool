@@ -1,0 +1,21 @@
+apply plugin: 'java'
+
+group "net.bdew.wurm"
+version "0.1"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
+}
+
+jar {
+    archiveName "${project.name}.jar"
+    manifest {
+        attributes(
+                'Main-Class': 'net.bdew.wurm.rmitool.Main',
+        )
+    }
+}
