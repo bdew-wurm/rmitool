@@ -14,7 +14,7 @@ public class Main {
         int port = safeInt(args[1]);
         String pass = args[2];
         String cmd = args[3];
-        WebInterface iface = null;
+        WebInterface iface;
         try {
             iface = setupConnection(addr, port);
             switch (cmd) {
@@ -24,11 +24,22 @@ public class Main {
                     int seconds = safeInt(args[5]);
                     String reason = args[6];
                     doShutdown(iface, pass, name, seconds, reason);
+                    System.err.println("Command sent!");
                     break;
                 case "broadcast":
                     if (args.length != 5) err("Usage: broadcast <message>");
                     String message = args[4];
                     doBroadcast(iface, pass, message);
+                    System.err.println("Command sent!");
+                    break;
+                case "playercount":
+                    System.out.println(doGetPlayerCount(iface, pass));
+                    break;
+                case "isrunning":
+                    if (doIsRunning(iface, pass))
+                        System.err.println("Server is running");
+                    else
+                        err("Server is online but returned false, this shouldn't happen.");
                     break;
                 default:
                     err("Unknown command: " + cmd);
@@ -36,8 +47,6 @@ public class Main {
         } catch (RemoteException | NotBoundException e) {
             err("Connection error: " + e.toString());
         }
-
-        System.err.println("Command sent!");
     }
 
     // ==== COMMAND HANDLERS ====
@@ -48,6 +57,14 @@ public class Main {
 
     public static void doBroadcast(WebInterface iface, String pass, String message) throws RemoteException {
         iface.broadcastMessage(pass, message);
+    }
+
+    public static boolean doIsRunning(WebInterface iface, String pass) throws RemoteException {
+        return iface.isRunning(pass);
+    }
+
+    public static int doGetPlayerCount(WebInterface iface, String pass) throws RemoteException {
+        return iface.getPlayerCount(pass);
     }
 
     // ==== MISC ====
