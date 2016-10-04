@@ -26,6 +26,16 @@ public class Main {
                     doShutdown(iface, pass, name, seconds, reason);
                     System.err.println("Command sent!");
                     break;
+                case "addmoney":
+                    if (args.length != 6) err("Usage: addmoney <player name> <amount>");
+                    String name = args[4];
+                    long amount = safeLong(args[5]);
+                    long playerID = doGetPlayerId(iface, pass, name);
+                    long currentAmount = doGetMoney(iface, pass, playerID, name);
+                    currentAmount += amount;
+                    doSetPlayerMoney(iface, pass, playerID, currentAmount, amount);
+                    System.err.println("Command sent!");
+                    break;
                 case "broadcast":
                     if (args.length != 5) err("Usage: broadcast <message>");
                     String message = args[4];
@@ -53,6 +63,18 @@ public class Main {
 
     public static void doShutdown(WebInterface iface, String pass, String name, int seconds, String reason) throws RemoteException {
         iface.startShutdown(pass, name, seconds, reason);
+    }
+
+    public static long doGetPlayerId(WebInterface iface, String pass, String name) throws RemoteException {
+        return iface.getPlayerId(pass, name);
+    }
+
+    public static long doGetMoney(WebInterface iface, String pass, long playerId, String playerName) throws RemoteException {
+        return iface.getMoney(pass, playerId, playerName);
+    }
+
+    public static void doSetPlayerMoney(WebInterface iface, String pass, long playerId, long current, long added)  throws RemoteException {
+        iface.setPlayerMoney(pass, playerId, current, added);
     }
 
     public static void doBroadcast(WebInterface iface, String pass, String message) throws RemoteException {
