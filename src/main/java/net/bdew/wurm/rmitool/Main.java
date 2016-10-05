@@ -14,16 +14,28 @@ public class Main {
         int port = safeInt(args[1]);
         String pass = args[2];
         String cmd = args[3];
+        String name = "";
         WebInterface iface;
         try {
             iface = setupConnection(addr, port);
             switch (cmd) {
                 case "shutdown":
                     if (args.length != 7) err("Usage: shutdown <name> <seconds> <reason>");
-                    String name = args[4];
+                    name = args[4];
                     int seconds = safeInt(args[5]);
                     String reason = args[6];
                     doShutdown(iface, pass, name, seconds, reason);
+                    System.err.println("Command sent!");
+                    break;
+                case "addmoney":
+                    if (args.length != 7) err("Usage: addmoney <player_name> <amount> <reason>");
+                    name = args[4];
+                    long amount = safeLong(args[5]);
+                    String detail = args[6];
+                    long playerID = doGetPlayerId(iface, pass, name);
+                    long currentAmount = doGetMoney(iface, pass, playerID, name);
+                    currentAmount += amount;
+                    doSetPlayerMoney(iface, pass, playerID, currentAmount, amount, detail);
                     System.err.println("Command sent!");
                     break;
                 case "broadcast":
@@ -55,6 +67,18 @@ public class Main {
         iface.startShutdown(pass, name, seconds, reason);
     }
 
+    public static long doGetPlayerId(WebInterface iface, String pass, String name) throws RemoteException {
+        return iface.getPlayerId(pass, name);
+    }
+
+    public static long doGetMoney(WebInterface iface, String pass, long playerId, String playerName) throws RemoteException {
+        return iface.getMoney(pass, playerId, playerName);
+    }
+
+    public static void doSetPlayerMoney(WebInterface iface, String pass, long playerId, long current, long added, String detail)  throws RemoteException {
+        iface.setPlayerMoney(pass, playerId, current, added, detail);
+    }
+
     public static void doBroadcast(WebInterface iface, String pass, String message) throws RemoteException {
         iface.broadcastMessage(pass, message);
     }
@@ -75,6 +99,15 @@ public class Main {
         } catch (NumberFormatException e) {
             err("Parse error: '" + s + "' is not a valid integer");
             return 0; //unreachable
+        }
+    }
+
+    public static long safeLong(String s) {
+        try {
+            return Long.parseLong(s, 10);
+        } catch (NumberFormatException e) {
+            err("Parse error: '" + s + "' is not a valid long");
+            return 0;
         }
     }
 
